@@ -2,6 +2,7 @@ package me.loving11ish.epichomes.utils;
 
 import me.loving11ish.epichomes.EpicHomes;
 import me.loving11ish.epichomes.externalhooks.VaultEconomyHook;
+import me.loving11ish.epichomes.models.HomePurchaseContext;
 import me.loving11ish.epichomes.models.User;
 import org.bukkit.entity.Player;
 
@@ -21,7 +22,7 @@ public class HomePurchaseUtil {
     private final UsermapStorageUtil usermapStorageUtil = EpicHomes.getPlugin().getUsermapStorageUtil();
     private final VaultEconomyHook economyHook = new VaultEconomyHook();
 
-    public PurchaseContext getPurchaseContext(Player player) {
+    public HomePurchaseContext getPurchaseContext(Player player) {
         User user = usermapStorageUtil.getUserByOnlinePlayer(player);
         int baseHomeLimit = getBaseHomeLimit(player);
         int extraHomes = getEffectiveExtraHomes(user);
@@ -30,11 +31,11 @@ public class HomePurchaseUtil {
         int nextExtraHomes = extraHomes >= maximumExtraHomes ? extraHomes : extraHomes + 1;
         double price = getNextHomePrice(extraHomes);
 
-        return new PurchaseContext(user, price, baseHomeLimit, extraHomes, nextExtraHomes, minimumExtraHomes, maximumExtraHomes);
+        return new HomePurchaseContext(user, price, baseHomeLimit, extraHomes, nextExtraHomes, minimumExtraHomes, maximumExtraHomes);
     }
 
     public boolean sendPurchaseDisclaimer(Player player) {
-        PurchaseContext context = getPurchaseContext(player);
+        HomePurchaseContext context = getPurchaseContext(player);
         if (!validatePurchasePreconditions(player, context)) {
             return true;
         }
@@ -44,7 +45,7 @@ public class HomePurchaseUtil {
     }
 
     public boolean purchaseExtraHome(Player player) {
-        PurchaseContext context = getPurchaseContext(player);
+        HomePurchaseContext context = getPurchaseContext(player);
         if (!validatePurchasePreconditions(player, context)) {
             return true;
         }
@@ -72,7 +73,7 @@ public class HomePurchaseUtil {
             return true;
         }
 
-        PurchaseContext updatedContext = getPurchaseContext(player);
+        HomePurchaseContext updatedContext = getPurchaseContext(player);
         MessageUtils.sendPlayer(player, applyPlaceholders(EpicHomes.getPlugin().getMessagesManager().getHomeBuySuccess(), updatedContext));
         return true;
     }
@@ -113,7 +114,7 @@ public class HomePurchaseUtil {
         return applyPlaceholders(text, getPurchaseContext(player));
     }
 
-    public String applyPlaceholders(String text, PurchaseContext context) {
+    public String applyPlaceholders(String text, HomePurchaseContext context) {
         return text.replace(PRICE_PLACEHOLDER, economyHook.format(context.getPrice()))
                 .replace(CURRENT_LIMIT_PLACEHOLDER, String.valueOf(context.getCurrentHomeLimit()))
                 .replace(NEXT_LIMIT_PLACEHOLDER, String.valueOf(context.getNextHomeLimit()))
@@ -123,7 +124,7 @@ public class HomePurchaseUtil {
                 .replace(MIN_EXTRA_HOMES_PLACEHOLDER, String.valueOf(context.getMinimumExtraHomes()));
     }
 
-    private boolean validatePurchasePreconditions(Player player, PurchaseContext context) {
+    private boolean validatePurchasePreconditions(Player player, HomePurchaseContext context) {
         if (!EpicHomes.getPlugin().getConfigManager().isExtraHomePurchaseEnabled()) {
             MessageUtils.sendPlayer(player, EpicHomes.getPlugin().getMessagesManager().getHomeBuyDisabled());
             return false;
@@ -153,59 +154,5 @@ public class HomePurchaseUtil {
         double basePrice = EpicHomes.getPlugin().getConfigManager().getExtraHomePurchaseBasePrice();
         double priceModifier = EpicHomes.getPlugin().getConfigManager().getExtraHomePurchasePriceModifier();
         return basePrice * Math.pow(priceModifier, paidExtraHomes);
-    }
-
-    public static class PurchaseContext {
-
-        private final User user;
-        private final double price;
-        private final int baseHomeLimit;
-        private final int extraHomes;
-        private final int nextExtraHomes;
-        private final int minimumExtraHomes;
-        private final int maximumExtraHomes;
-
-        public PurchaseContext(User user, double price, int baseHomeLimit, int extraHomes, int nextExtraHomes,
-                               int minimumExtraHomes, int maximumExtraHomes) {
-            this.user = user;
-            this.price = price;
-            this.baseHomeLimit = baseHomeLimit;
-            this.extraHomes = extraHomes;
-            this.nextExtraHomes = nextExtraHomes;
-            this.minimumExtraHomes = minimumExtraHomes;
-            this.maximumExtraHomes = maximumExtraHomes;
-        }
-
-        public User getUser() {
-            return user;
-        }
-
-        public double getPrice() {
-            return price;
-        }
-
-        public int getCurrentHomeLimit() {
-            return baseHomeLimit + extraHomes;
-        }
-
-        public int getNextHomeLimit() {
-            return baseHomeLimit + nextExtraHomes;
-        }
-
-        public int getExtraHomes() {
-            return extraHomes;
-        }
-
-        public int getNextExtraHomes() {
-            return nextExtraHomes;
-        }
-
-        public int getMinimumExtraHomes() {
-            return minimumExtraHomes;
-        }
-
-        public int getMaximumExtraHomes() {
-            return maximumExtraHomes;
-        }
     }
 }

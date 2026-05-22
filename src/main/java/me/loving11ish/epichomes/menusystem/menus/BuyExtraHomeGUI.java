@@ -3,6 +3,7 @@ package me.loving11ish.epichomes.menusystem.menus;
 import me.loving11ish.epichomes.EpicHomes;
 import me.loving11ish.epichomes.menusystem.Menu;
 import me.loving11ish.epichomes.menusystem.PlayerMenuUtility;
+import me.loving11ish.epichomes.models.HomePurchaseContext;
 import me.loving11ish.epichomes.utils.ColorUtils;
 import me.loving11ish.epichomes.utils.HomePurchaseUtil;
 import org.bukkit.Material;
@@ -58,7 +59,7 @@ public class BuyExtraHomeGUI extends Menu {
     @Override
     public void setMenuItems() {
         Player player = playerMenuUtility.getOwner();
-        HomePurchaseUtil.PurchaseContext context = homePurchaseUtil.getPurchaseContext(player);
+        HomePurchaseContext context = homePurchaseUtil.getPurchaseContext(player);
 
         ItemStack purchaseInfo = makePurchaseItem(
                 EpicHomes.getPlugin().getConfigManager().getBuyExtraHomeGUIInfoItemMaterial(),
@@ -90,7 +91,7 @@ public class BuyExtraHomeGUI extends Menu {
     }
 
     private ItemStack makePurchaseItem(Material material, String displayName, List<String> loreConfigList,
-                                       String action, HomePurchaseUtil.PurchaseContext context) {
+                                       String action, HomePurchaseContext context) {
         ItemStack itemStack = new ItemStack(material, 1);
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.setDisplayName(ColorUtils.translateColorCodes(homePurchaseUtil.applyPlaceholders(displayName, context)));
